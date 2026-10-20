@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReUnite AI – Smart Lost & Found Family Reunification Platform</title>
+  <meta name="description" content="ReUnite AI helps families reconnect with missing loved ones through smart AI-assisted matching of missing and found person reports." />
+  <meta name="keywords" content="missing persons, lost and found, family reunification, AI matching, report missing person" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="/static/styles/main.css" />
+</head>
+<body>
+
+  <!-- ═══ NAVBAR ═══ -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="#" class="nav-brand" onclick="showPage('home')">
+        <img src="/public/assets/logo.jpg" alt="ReUnite AI Logo" class="nav-logo" />
+        <span class="brand-name">ReUnite <span class="brand-ai">AI</span></span>
+      </a>
+      <div class="nav-links" id="nav-links">
+        <a href="#" class="nav-link" onclick="showPage('home')">Home</a>
+        <a href="#" class="nav-link" onclick="showPage('reports')">Browse Reports</a>
+        <a href="#" class="nav-link btn-outline-nav" onclick="showPage('report-missing')">Report Missing</a>
+        <a href="#" class="nav-link btn-outline-nav" onclick="showPage('report-found')">Report Found</a>
+        <div id="auth-nav-links">
+          <a href="#" class="nav-link btn-primary-nav" onclick="showPage('login')">Sign In</a>
+        </div>
+      </div>
+      <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══ PAGES ═══ -->
+  <main id="app">
+
+    <!-- ── HOME PAGE ── -->
+    <section id="page-home" class="page active">
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-bg-shapes">
+          <div class="shape shape-1"></div>
+          <div class="shape shape-2"></div>
+          <div class="shape shape-3"></div>
+        </div>
+        <div class="hero-content">
+          <div class="hero-badge animate-fadeInUp">
+            <span class="badge-dot"></span>
+            AI-Powered Reunification Platform
+          </div>
+          <h1 class="hero-title animate-fadeInUp delay-1">
+            Every Missing Person<br />
+            <span class="gradient-text">Deserves to Be Found</span>
+          </h1>
+          <p class="hero-desc animate-fadeInUp delay-2">
+            ReUnite AI connects families with their missing loved ones through 
+            intelligent matching of missing and found person reports. 
+            Submit a report in minutes — our system works 24/7 to find potential matches.
+          </p>
+          <div class="hero-actions animate-fadeInUp delay-3">
+            <button class="btn btn-primary btn-lg" onclick="showPage('report-missing')">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              Report Missing Person
+            </button>
+            <button class="btn btn-secondary btn-lg" onclick="showPage('report-found')">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Report Found Person
+            </button>
+          </div>
+          <div class="hero-stats animate-fadeInUp delay-4">
+            <div class="stat-item" id="stat-reports">
+              <span class="stat-num" id="stat-total">–</span>
+              <span class="stat-label">Reports Filed</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span class="stat-num" id="stat-matches">–</span>
+              <span class="stat-label">Matches Found</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span class="stat-num" id="stat-reunited">–</span>
+              <span class="stat-label">Reunited</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- How it works -->
+      <div class="section how-it-works">
+        <div class="container">
+          <h2 class="section-title">How ReUnite AI Works</h2>
+          <p class="section-subtitle">Three simple steps to help bring families together</p>
+          <div class="steps-grid">
+            <div class="step-card">
+              <div class="step-icon step-icon-1">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              </div>
+              <h3>1. Submit a Report</h3>
+              <p>Fill in descriptive details about the missing or found person — appearance, location, clothing, and optional photos.</p>
+            </div>
+            <div class="step-card">
+              <div class="step-icon step-icon-2">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+              </div>
+              <h3>2. AI Matching</h3>
+              <p>Our matching engine compares physical descriptors across all active reports and scores potential matches for human review.</p>
+            </div>
+            <div class="step-card">
+              <div class="step-icon step-icon-3">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 12a19.79 19.79 0 0 1-3-8.59A2 2 0 0 1 3.08 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              </div>
+              <h3>3. Safe Contact</h3>
+              <p>When a strong match is found, both parties are notified. Contact happens through our platform to protect everyone's privacy.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Reports Preview -->
+      <div class="section recent-reports">
+        <div class="container">
+          <div class="section-header-row">
+            <div>
+              <h2 class="section-title text-left">Recent Reports</h2>
+              <p class="section-subtitle text-left">Browse the latest missing and found person reports</p>
+            </div>
+            <button class="btn btn-outline" onclick="showPage('reports')">View All Reports</button>
+          </div>
+          <div id="home-reports-grid" class="reports-grid">
+            <div class="loading-spinner"><div class="spinner"></div><p>Loading reports…</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA Banner -->
+      <div class="section cta-banner">
+        <div class="container">
+          <div class="cta-box">
+            <div class="cta-content">
+              <h2>Have you seen someone who needs help?</h2>
+              <p>Even a brief description can make a critical difference. Submit a found-person report now — it only takes 2 minutes.</p>
+              <button class="btn btn-white btn-lg" onclick="showPage('report-found')">Report a Found Person</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── REPORTS BROWSE PAGE ── -->
+    <section id="page-reports" class="page">
+      <div class="container page-container">
+        <div class="page-header">
+          <h1>Browse Reports</h1>
+          <p>Search through active missing and found person reports</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-bar card">
+          <div class="filter-row">
+            <div class="form-group">
+              <label for="filter-type">Report Type</label>
+              <select id="filter-type" class="form-control" onchange="filterReports()">
+                <option value="">All Reports</option>
+                <option value="missing">Missing Persons</option>
+                <option value="found">Found Persons</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="filter-gender">Gender</label>
+              <select id="filter-gender" class="form-control" onchange="filterReports()">
+                <option value="">Any</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group flex-1">
+              <label for="filter-search">Search</label>
+              <input type="text" id="filter-search" class="form-control" placeholder="Name, location, description…" oninput="debounceFilter()" />
+            </div>
+            <div class="form-group align-end">
+              <button class="btn btn-outline" onclick="clearFilters()">Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="reports-count" class="results-info"></div>
+        <div id="reports-grid" class="reports-grid">
+          <div class="loading-spinner"><div class="spinner"></div><p>Loading…</p></div>
+        </div>
+        <div id="reports-pagination" class="pagination-bar"></div>
+      </div>
+    </section>
+
+    <!-- ── REPORT DETAIL PAGE ── -->
+    <section id="page-report-detail" class="page">
+      <div class="container page-container" id="report-detail-content">
+        <div class="loading-spinner"><div class="spinner"></div><p>Loading report…</p></div>
+      </div>
+    </section>
+
+    <!-- ── SUBMIT MISSING REPORT PAGE ── -->
+    <section id="page-report-missing" class="page">
+      <div class="container page-container narrow">
+        <div class="page-header">
+          <div class="report-type-badge missing-badge">Missing Person Report</div>
+          <h1>Report a Missing Person</h1>
+          <p>Please fill in as much detail as possible. All contact information is kept private.</p>
+        </div>
+        <div id="report-form-missing" class="card form-card">
+          <!-- Form injected by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SUBMIT FOUND REPORT PAGE ── -->
+    <section id="page-report-found" class="page">
+      <div class="container page-container narrow">
+        <div class="page-header">
+          <div class="report-type-badge found-badge">Found Person Report</div>
+          <h1>Report a Found Person</h1>
+          <p>You've found someone who may be lost or unable to reach their family. Your report could reunite them.</p>
+        </div>
+        <div id="report-form-found" class="card form-card">
+          <!-- Form injected by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ── LOGIN PAGE ── -->
+    <section id="page-login" class="page">
+      <div class="auth-page">
+        <div class="auth-card card">
+          <div class="auth-logo">
+            <img src="/public/assets/logo.jpg" alt="ReUnite AI" />
+          </div>
+          <h2 class="auth-title">Welcome Back</h2>
+          <p class="auth-subtitle">Sign in to manage your reports and view matches</p>
+          <form id="login-form" onsubmit="handleLogin(event)">
+            <div class="form-group">
+              <label for="login-email">Email Address</label>
+              <input type="email" id="login-email" class="form-control" placeholder="you@example.com" required />
+            </div>
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <input type="password" id="login-password" class="form-control" placeholder="••••••••" required />
+            </div>
+            <div id="login-error" class="form-error hidden"></div>
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="login-btn">Sign In</button>
+          </form>
+          <p class="auth-switch">Don't have an account? <a href="#" onclick="showPage('register')">Register</a></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── REGISTER PAGE ── -->
+    <section id="page-register" class="page">
+      <div class="auth-page">
+        <div class="auth-card card">
+          <div class="auth-logo">
+            <img src="/public/assets/logo.jpg" alt="ReUnite AI" />
+          </div>
+          <h2 class="auth-title">Create Account</h2>
+          <p class="auth-subtitle">Register to track your reports and get match notifications</p>
+          <form id="register-form" onsubmit="handleRegister(event)">
+            <div class="form-group">
+              <label for="reg-name">Full Name</label>
+              <input type="text" id="reg-name" class="form-control" placeholder="Your full name" required />
+            </div>
+            <div class="form-group">
+              <label for="reg-email">Email Address</label>
+              <input type="email" id="reg-email" class="form-control" placeholder="you@example.com" required />
+            </div>
+            <div class="form-group">
+              <label for="reg-phone">Phone (optional)</label>
+              <input type="tel" id="reg-phone" class="form-control" placeholder="+91 98765 43210" />
+            </div>
+            <div class="form-group">
+              <label for="reg-password">Password (min 8 chars)</label>
+              <input type="password" id="reg-password" class="form-control" placeholder="••••••••" required minlength="8" />
+            </div>
+            <div id="register-error" class="form-error hidden"></div>
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="register-btn">Create Account</button>
+          </form>
+          <p class="auth-switch">Already have an account? <a href="#" onclick="showPage('login')">Sign In</a></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── DASHBOARD PAGE ── -->
+    <section id="page-dashboard" class="page">
+      <div class="container page-container">
+        <div class="page-header">
+          <h1>My Dashboard</h1>
+          <p id="dashboard-welcome">Welcome back!</p>
+        </div>
+        <div class="dashboard-grid">
+          <div class="dashboard-col-main">
+            <div class="card">
+              <div class="card-header-row">
+                <h3 class="card-title">My Reports</h3>
+                <div class="card-actions">
+                  <button class="btn btn-sm btn-primary" onclick="showPage('report-missing')">+ Missing</button>
+                  <button class="btn btn-sm btn-outline" onclick="showPage('report-found')">+ Found</button>
+                </div>
+              </div>
+              <div id="my-reports-list">
+                <div class="loading-spinner"><div class="spinner"></div><p>Loading…</p></div>
+              </div>
+            </div>
+          </div>
+          <div class="dashboard-col-side">
+            <div class="card">
+              <h3 class="card-title">Potential Matches</h3>
+              <p class="card-subtitle">AI-suggested matches for your reports</p>
+              <div id="my-matches-list">
+                <div class="loading-spinner"><div class="spinner"></div><p>Loading…</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ADMIN PAGE ── -->
+    <section id="page-admin" class="page">
+      <div class="container page-container">
+        <div class="page-header">
+          <h1>Admin Dashboard</h1>
+          <p>Platform overview and moderation tools</p>
+        </div>
+
+        <!-- Stats -->
+        <div id="admin-stats-grid" class="stats-grid">
+          <div class="loading-spinner"><div class="spinner"></div><p>Loading stats…</p></div>
+        </div>
+
+        <div class="admin-sections">
+
+          <!-- Pending Reports -->
+          <div class="card" style="margin-bottom:24px">
+            <div class="card-header-row">
+              <h3 class="card-title">⏳ Pending Review</h3>
+              <button class="btn btn-sm btn-outline" onclick="loadAdminPendingReports()">↺ Refresh</button>
+            </div>
+            <div id="admin-pending-list">
+              <div class="loading-spinner"><div class="spinner"></div><p>Loading…</p></div>
+            </div>
+          </div>
+
+          <!-- All Matches -->
+          <div class="card" style="margin-bottom:24px">
+            <div class="card-header-row">
+              <h3 class="card-title">All Matches</h3>
+              <select id="admin-match-filter" class="form-control form-control-sm" onchange="loadAdminMatches()">
+                <option value="">All Statuses</option>
+                <option value="suggested">Suggested</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+            <div id="admin-matches-list">
+              <div class="loading-spinner"><div class="spinner"></div><p>Loading…</p></div>
+            </div>
+          </div>
+
+          <!-- User Management -->
+          <div class="card">
+            <div class="card-header-row">
+              <h3 class="card-title">👥 User Management</h3>
+              <button class="btn btn-sm btn-outline" onclick="loadAdminUsers()">↺ Refresh</button>
+            </div>
+            <div id="admin-users-list">
+              <div class="loading-spinner"><div class="spinner"></div><p>Loading users…</p></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── TOAST NOTIFICATIONS ── -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- ── MODAL ── -->
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/static/app.js"></script>
+</body>
+</html>

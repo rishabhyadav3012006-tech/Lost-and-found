@@ -1,0 +1,32 @@
+[Unit]
+Description=ReUnite AI – FastAPI Application
+After=network.target
+
+[Service]
+Type=exec
+User=www-data
+Group=www-data
+
+# ── Paths ─────────────────────────────────────────────────────────────────────
+# Change /srv/reunite-ai to wherever you clone the project on your VPS
+WorkingDirectory=/srv/reunite-ai
+EnvironmentFile=/srv/reunite-ai/.env
+
+# ── Command ───────────────────────────────────────────────────────────────────
+ExecStart=/srv/reunite-ai/venv/bin/gunicorn \
+    -c gunicorn.conf.py \
+    backend.app.main:app
+
+# ── Process management ────────────────────────────────────────────────────────
+Restart=always
+RestartSec=5
+KillMode=mixed
+TimeoutStopSec=30
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=reunite-ai
+
+[Install]
+WantedBy=multi-user.target
