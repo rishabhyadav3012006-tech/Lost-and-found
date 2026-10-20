@@ -12,6 +12,22 @@ from ...services.matching import run_matching_for_report
 router = APIRouter(prefix="/matches", tags=["matches"])
 
 
+def _ensure_can_access(match: Match, user: User, db: Session):
+    """Only admins and submitters of either report may view or review a match."""
+    if user.is_admin:
+        return
+    owns_report = (
+        db.query(Report.id)
+        .filter(
+            Report.id.in_([match.missing_report_id, match.found_report_id]),
+            Report.submitter_id == user.id,
+        )
+        .first()
+    )
+    if not owns_report:
+        raise HTTPException(403, "Not authorized")
+
+
 @router.get("/", response_model=PaginatedMatches)
 def list_matches(
     status: Optional[MatchStatus] = None,
@@ -90,6 +106,7 @@ def get_match(
     ).filter(Match.id == match_id).first()
     if not match:
         raise HTTPException(404, "Match not found")
+    _ensure_can_access(match, current_user, db)
     return match
 
 
@@ -103,6 +120,7 @@ def update_match(
     match = db.query(Match).filter(Match.id == match_id).first()
     if not match:
         raise HTTPException(404, "Match not found")
+    _ensure_can_access(match, current_user, db)
     match.status = payload.status
     match.reviewed_by_id = current_user.id
     db.commit()

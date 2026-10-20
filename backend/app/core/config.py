@@ -43,7 +43,9 @@ class Settings:
         ]
 
     # ─── Matching ─────────────────────────────────────────────────────────────
-    MATCH_SCORE_THRESHOLD: float = 0.3
+    # Minimum score for a pair to be suggested for human review. Calibrated
+    # against tests/test_matching.py — change both together.
+    MATCH_SCORE_THRESHOLD: float = 0.5
 
     # ─── Email / SMTP ──────────────────────────────────────────────────────────
     # Set EMAIL_ENABLED=true and provide SMTP_* vars in .env to enable emails.

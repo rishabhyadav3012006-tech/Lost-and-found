@@ -8,6 +8,7 @@ from ...core.database import get_db
 from ...core.security import get_current_admin
 from ...models.user import User, Report, Match, ReportStatus, MatchStatus
 from ...schemas.schemas import ReportOut, UserOut, ReportUpdate, PaginatedReports
+from ...services.matching import run_matching_for_report
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -133,6 +134,7 @@ def approve_report(
         raise HTTPException(404, "Report not found")
     report.status = ReportStatus.active
     db.commit()
+    run_matching_for_report(report, db)
     return {"message": "Report approved"}
 
 
@@ -147,6 +149,7 @@ def close_report(
         raise HTTPException(404, "Report not found")
     report.status = ReportStatus.closed
     db.commit()
+    run_matching_for_report(report, db)
     return {"message": "Report closed"}
 
 
@@ -169,6 +172,7 @@ def set_report_status(
         raise HTTPException(404, "Report not found")
     report.status = payload.status
     db.commit()
+    run_matching_for_report(report, db)
     db.refresh(report)
     return report
 
