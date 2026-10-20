@@ -28,8 +28,21 @@ async function apiFetch(path, options = {}) {
       : options.headers,
   });
   if (res.status === 204) return null;
-  const data = await res.json().catch(() => ({ detail: res.statusText }));
-  if (!res.ok) throw new Error(data.detail || 'Request failed');
+  return readApiResponse(res);
+}
+
+// Parses a JSON API response, turning non-JSON replies (e.g. an HTML error page)
+// into a readable error instead of a JSON syntax error.
+async function readApiResponse(res, fallbackMsg = 'Request failed') {
+  const data = await res.json().catch(() => null);
+  if (!res.ok || data === null) {
+    const detail = data?.detail;
+    const msg = typeof detail === 'string' ? detail
+      : Array.isArray(detail) ? detail.map(d => d.msg || String(d)).join(', ')
+      : data === null ? `Server unavailable (HTTP ${res.status}). Please try again later.`
+      : fallbackMsg;
+    throw new Error(msg);
+  }
   return data;
 }
 
@@ -164,8 +177,7 @@ async function handleLogin(e) {
     form.append('username', email);
     form.append('password', password);
     const res = await fetch(API + '/auth/login', { method: 'POST', body: form });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'Login failed');
+    const data = await readApiResponse(res, 'Login failed');
     authToken = data.access_token;
     localStorage.setItem('reunite_token', authToken);
     currentUser = data.user;
@@ -749,8 +761,7 @@ async function handleReportSubmit(e, type) {
     if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
 
     const res = await fetch(API + '/reports/', { method: 'POST', body: form, headers });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'Submission failed');
+    const data = await readApiResponse(res, 'Submission failed');
 
     sucEl.textContent = `✅ Report submitted successfully! Report ID: #${data.id}. Our system will search for potential matches.`;
     sucEl.classList.remove('hidden');
