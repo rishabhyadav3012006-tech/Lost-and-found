@@ -3,7 +3,8 @@
    Pure Vanilla JS SPA (no frameworks needed)
    ═══════════════════════════════════════════════════ */
 
-const API = '/api';
+const API = window.__API_URL__ || localStorage.getItem('reunite_api_url') || '/api';
+const UPLOADS_BASE = window.__UPLOADS_URL__ || localStorage.getItem('reunite_uploads_url') || '/uploads/photos';
 let currentUser = null;
 let authToken = localStorage.getItem('reunite_token') || null;
 let filterDebounceTimer = null;
@@ -83,7 +84,9 @@ function scoreClass(score) {
 }
 
 function photoUrl(filename) {
-  return `/uploads/photos/${filename}`;
+  if (!filename) return '';
+  if (filename.startsWith('http://') || filename.startsWith('https://')) return filename;
+  return `${UPLOADS_BASE}/${filename}`;
 }
 
 // ═══════════════════════════════════════════════════

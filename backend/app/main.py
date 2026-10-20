@@ -75,6 +75,7 @@ def health():
 FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend"
 
 if FRONTEND_DIR.exists():
+    app.mount("/src", StaticFiles(directory=str(FRONTEND_DIR / "src")), name="src")
     app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR / "src")), name="static_src")
     app.mount("/public", StaticFiles(directory=str(FRONTEND_DIR / "public")), name="public")
 

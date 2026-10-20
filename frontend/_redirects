@@ -1,0 +1,10 @@
+# Netlify static redirects for drag-and-drop & direct folder deploy
+/static/*   /src/:splat    200
+/public/*   /public/:splat 200
+
+# Proxy API calls to live backend (update with your live backend URL)
+/api/*      https://lost-and-found-backend.onrender.com/api/:splat      200
+/uploads/*  https://lost-and-found-backend.onrender.com/uploads/:splat  200
+
+# SPA fallback (any other page goes to index.html)
+/*          /index.html    200
