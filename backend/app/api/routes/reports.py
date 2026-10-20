@@ -64,7 +64,9 @@ async def create_report(
     location_lng: Optional[float] = Form(None),
     incident_date: Optional[str] = Form(None),
     additional_info: Optional[str] = Form(None),
-    is_public: bool = Form(True),
+    # Parsed manually: newer FastAPI reads an absent bool form field as False,
+    # which made every report submitted from the website private.
+    is_public: Optional[str] = Form(None),
     contact_name: Optional[str] = Form(None),
     contact_phone: Optional[str] = Form(None),
     contact_email: Optional[str] = Form(None),
@@ -98,7 +100,7 @@ async def create_report(
         location_lng=location_lng,
         incident_date=inc_date,
         additional_info=additional_info,
-        is_public=is_public,
+        is_public=(is_public or "true").strip().lower() not in ("false", "0", "off", "no"),
         contact_name=contact_name,
         contact_phone=contact_phone,
         contact_email=contact_email,
@@ -180,16 +182,27 @@ def my_reports(
 
 
 @router.get("/{report_id}", response_model=ReportOut)
-def get_report(report_id: int, db: Session = Depends(get_db)):
+def get_report(
+    report_id: int,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_user),
+):
     report = (
         db.query(Report)
         .options(joinedload(Report.photos))
         .filter(Report.id == report_id)
         .first()
     )
-    if not report:
+    is_owner_or_admin = current_user is not None and (
+        current_user.is_admin or report is not None and report.submitter_id == current_user.id
+    )
+    if not report or (not report.is_public and not is_owner_or_admin):
         raise HTTPException(404, "Report not found")
-    return report
+    out = ReportOut.model_validate(report)
+    if current_user is None:
+        # Contact details are only shown to signed-in users
+        out.contact_name = out.contact_phone = out.contact_email = None
+    return out
 
 
 @router.patch("/{report_id}", response_model=ReportOut)
@@ -207,6 +220,8 @@ def update_report(
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(report, field, value)
     db.commit()
+    # Descriptions or status may have changed, so refresh suggested matches
+    run_matching_for_report(report, db)
     db.refresh(report)
     return report
 

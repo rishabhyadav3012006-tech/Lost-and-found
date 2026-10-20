@@ -33,12 +33,19 @@ async function apiFetch(path, options = {}) {
   return data;
 }
 
+// Escape user-supplied text before inserting it into HTML
+function esc(value) {
+  return String(value ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c]));
+}
+
 function showToast(msg, type = 'info') {
   const container = document.getElementById('toast-container');
   const icons = { info: 'ℹ️', success: '✅', error: '❌' };
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
-  toast.innerHTML = `<span class="toast-icon">${icons[type]}</span><span class="toast-msg">${msg}</span>`;
+  toast.innerHTML = `<span class="toast-icon">${icons[type]}</span><span class="toast-msg">${esc(msg)}</span>`;
   container.appendChild(toast);
   setTimeout(() => toast.remove(), 4000);
 }
@@ -307,7 +314,7 @@ async function loadReports() {
     grid.innerHTML = data.items.map(renderReportCard).join('');
     renderPagination(data.total, data.pages, paginationEl);
   } catch (e) {
-    grid.innerHTML = `<div class="empty-state"><p>Error loading reports: ${e.message}</p></div>`;
+    grid.innerHTML = `<div class="empty-state"><p>Error loading reports: ${esc(e.message)}</p></div>`;
   }
 }
 
@@ -345,12 +352,12 @@ function renderReportCard(r) {
       ${photoHtml}
       <div class="report-card-body">
         <span class="report-card-type ${typeClass}">${typeLabel}</span>
-        <div class="report-card-name">${r.person_name || 'Unknown name'}</div>
+        <div class="report-card-name">${esc(r.person_name) || 'Unknown name'}</div>
         <div class="report-card-meta">
           ${r.gender !== 'unknown' ? `<span class="meta-chip">${capitalize(r.gender)}</span>` : ''}
           ${(r.approximate_age_min || r.approximate_age_max) ? `<span class="meta-chip">${ageRange(r.approximate_age_min, r.approximate_age_max)}</span>` : ''}
         </div>
-        ${r.location_description ? `<div class="report-card-location"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${r.location_description}</div>` : ''}
+        ${r.location_description ? `<div class="report-card-location"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${esc(r.location_description)}</div>` : ''}
         <div class="report-card-date">${formatDate(r.created_at)}</div>
       </div>
     </div>`;
@@ -368,7 +375,7 @@ async function viewReport(id) {
     const r = await apiFetch(`/reports/${id}`);
     renderReportDetail(r, container);
   } catch (e) {
-    container.innerHTML = `<div class="empty-state"><h3>Report not found</h3><p>${e.message}</p><button class="btn btn-outline" onclick="showPage('reports')">← Back to Reports</button></div>`;
+    container.innerHTML = `<div class="empty-state"><h3>Report not found</h3><p>${esc(e.message)}</p><button class="btn btn-outline" onclick="showPage('reports')">← Back to Reports</button></div>`;
   }
 }
 
@@ -387,7 +394,7 @@ function renderReportDetail(r, container) {
     <a href="#" onclick="showPage('reports')" class="btn btn-outline" style="margin-bottom:24px">← Back to Reports</a>
     
     <div class="report-type-badge ${typeClass}">${typeLabel}</div>
-    <h1 style="margin-bottom:8px">${r.person_name || 'Unknown Name'}</h1>
+    <h1 style="margin-bottom:8px">${esc(r.person_name) || 'Unknown Name'}</h1>
     <div style="margin-bottom:24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
       <span class="status-badge status-${r.status}">${capitalize(r.status)}</span>
       <span style="color:var(--text-muted);font-size:0.85rem">Filed ${formatDate(r.created_at)}</span>
@@ -400,26 +407,26 @@ function renderReportDetail(r, container) {
           <div class="detail-item"><div class="report-detail-label">Age Range</div><div class="report-detail-value">${ageRange(r.approximate_age_min, r.approximate_age_max)}</div></div>
           <div class="detail-item"><div class="report-detail-label">Gender</div><div class="report-detail-value">${capitalize(r.gender)}</div></div>
           <div class="detail-item"><div class="report-detail-label">Height</div><div class="report-detail-value">${r.height_cm_min || r.height_cm_max ? `${r.height_cm_min||'?'}–${r.height_cm_max||'?'} cm` : '–'}</div></div>
-          <div class="detail-item"><div class="report-detail-label">Build</div><div class="report-detail-value">${r.build || '–'}</div></div>
-          <div class="detail-item"><div class="report-detail-label">Hair</div><div class="report-detail-value">${r.hair_color || '–'}</div></div>
-          <div class="detail-item"><div class="report-detail-label">Eyes</div><div class="report-detail-value">${r.eye_color || '–'}</div></div>
-          <div class="detail-item"><div class="report-detail-label">Skin Tone</div><div class="report-detail-value">${r.skin_tone || '–'}</div></div>
+          <div class="detail-item"><div class="report-detail-label">Build</div><div class="report-detail-value">${esc(r.build) || '–'}</div></div>
+          <div class="detail-item"><div class="report-detail-label">Hair</div><div class="report-detail-value">${esc(r.hair_color) || '–'}</div></div>
+          <div class="detail-item"><div class="report-detail-label">Eyes</div><div class="report-detail-value">${esc(r.eye_color) || '–'}</div></div>
+          <div class="detail-item"><div class="report-detail-label">Skin Tone</div><div class="report-detail-value">${esc(r.skin_tone) || '–'}</div></div>
           <div class="detail-item"><div class="report-detail-label">Last Seen</div><div class="report-detail-value">${formatDate(r.incident_date)}</div></div>
         </div>
-        ${r.location_description ? `<div><div class="report-detail-label">Location</div><div class="report-detail-value">📍 ${r.location_description}</div></div>` : ''}
-        ${r.clothing_description ? `<div><div class="report-detail-label">Clothing</div><div class="report-detail-value">${r.clothing_description}</div></div>` : ''}
-        ${r.distinguishing_features ? `<div><div class="report-detail-label">Distinguishing Features</div><div class="report-detail-value">${r.distinguishing_features}</div></div>` : ''}
+        ${r.location_description ? `<div><div class="report-detail-label">Location</div><div class="report-detail-value">📍 ${esc(r.location_description)}</div></div>` : ''}
+        ${r.clothing_description ? `<div><div class="report-detail-label">Clothing</div><div class="report-detail-value">${esc(r.clothing_description)}</div></div>` : ''}
+        ${r.distinguishing_features ? `<div><div class="report-detail-label">Distinguishing Features</div><div class="report-detail-value">${esc(r.distinguishing_features)}</div></div>` : ''}
       </div>
     </div>
 
-    ${r.additional_info ? `<div class="card" style="margin-bottom:24px"><div class="report-detail-label">Additional Information</div><p style="margin-top:8px;color:var(--text-secondary)">${r.additional_info}</p></div>` : ''}
+    ${r.additional_info ? `<div class="card" style="margin-bottom:24px"><div class="report-detail-label">Additional Information</div><p style="margin-top:8px;color:var(--text-secondary)">${esc(r.additional_info)}</p></div>` : ''}
 
     ${(r.contact_name || r.contact_email || r.contact_phone) && currentUser ? `
     <div class="card" style="margin-bottom:24px;border-color:rgba(124,58,237,0.3)">
       <h3 style="margin-bottom:12px">Contact Information</h3>
-      ${r.contact_name ? `<p><strong>Name:</strong> ${r.contact_name}</p>` : ''}
-      ${r.contact_phone ? `<p><strong>Phone:</strong> <a href="tel:${r.contact_phone}">${r.contact_phone}</a></p>` : ''}
-      ${r.contact_email ? `<p><strong>Email:</strong> <a href="mailto:${r.contact_email}">${r.contact_email}</a></p>` : ''}
+      ${r.contact_name ? `<p><strong>Name:</strong> ${esc(r.contact_name)}</p>` : ''}
+      ${r.contact_phone ? `<p><strong>Phone:</strong> <a href="tel:${esc(r.contact_phone)}">${esc(r.contact_phone)}</a></p>` : ''}
+      ${r.contact_email ? `<p><strong>Email:</strong> <a href="mailto:${esc(r.contact_email)}">${esc(r.contact_email)}</a></p>` : ''}
     </div>` : currentUser ? '' : `<div class="card" style="margin-bottom:24px;background:rgba(124,58,237,0.08);border-color:rgba(124,58,237,0.2)"><p>🔒 <a href="#" onclick="showPage('login')">Sign in</a> to view contact information for this report.</p></div>`}
 
     ${(isOwner || isAdmin) ? `
@@ -471,13 +478,13 @@ async function loadReportMatches(reportId) {
           <span style="font-size:0.65rem;font-weight:500">match</span>
         </div>
         <div style="flex:1">
-          <div style="font-weight:700;margin-bottom:4px">${other?.person_name || 'Unknown'} 
+          <div style="font-weight:700;margin-bottom:4px">${esc(other?.person_name) || 'Unknown'} 
             <span class="status-badge status-${m.status}" style="margin-left:8px">${m.status}</span>
           </div>
           <div style="color:var(--text-secondary);font-size:0.85rem">
             ${other?.gender !== 'unknown' ? capitalize(other?.gender) + ' · ' : ''}
             ${ageRange(other?.approximate_age_min, other?.approximate_age_max)} · 
-            ${other?.location_description || 'Unknown location'}
+            ${esc(other?.location_description) || 'Unknown location'}
           </div>
           <div style="margin-top:12px;display:flex;gap:8px">
             <button class="btn btn-sm btn-outline" onclick="viewReport(${other?.id})">View Report</button>
@@ -788,7 +795,7 @@ async function loadDashboard() {
             : `<div class="my-report-thumb" style="display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>`
           }
           <div class="my-report-info">
-            <div class="my-report-name">${r.person_name || 'Unknown'}</div>
+            <div class="my-report-name">${esc(r.person_name) || 'Unknown'}</div>
             <div class="my-report-meta">
               <span class="report-card-type ${r.report_type === 'missing' ? 'type-missing' : 'type-found'}" style="font-size:0.7rem;padding:2px 8px">${capitalize(r.report_type)}</span>
               · <span class="status-badge status-${r.status}" style="font-size:0.7rem">${r.status}</span>
@@ -803,7 +810,7 @@ async function loadDashboard() {
       }).join('');
     }
   } catch (e) {
-    reportsContainer.innerHTML = `<p style="color:var(--error)">Error: ${e.message}</p>`;
+    reportsContainer.innerHTML = `<p style="color:var(--error)">Error: ${esc(e.message)}</p>`;
   }
 
   // Load matches
@@ -821,7 +828,7 @@ async function loadDashboard() {
         return `<div class="match-mini" onclick="viewReport(${m.missing_report_id})">
           <div class="match-mini-score ${sc}">${pct}%</div>
           <div class="match-mini-info">
-            <div class="match-mini-name">${labelA} ↔ ${labelB}</div>
+            <div class="match-mini-name">${esc(labelA)} ↔ ${esc(labelB)}</div>
             <div class="match-mini-sub">${capitalize(m.status)} · ${formatDate(m.created_at)}</div>
           </div>
         </div>`;
@@ -862,7 +869,7 @@ async function loadAdminStats() {
       <div class="stat-card stat-card-green"><span class="stat-card-num">${s.confirmed_matches}</span><div class="stat-card-label">Confirmed</div></div>
     `;
   } catch (e) {
-    container.innerHTML = `<p style="color:var(--error)">Error loading stats: ${e.message}</p>`;
+    container.innerHTML = `<p style="color:var(--error)">Error loading stats: ${esc(e.message)}</p>`;
   }
 }
 
@@ -886,14 +893,14 @@ async function loadAdminMatches() {
         <div class="admin-match-reports">
           <div class="admin-match-report">
             <div class="admin-match-label">Missing</div>
-            <div class="admin-match-name">${m.missing_report?.person_name || '#' + m.missing_report_id}</div>
-            <div class="admin-match-sub">${m.missing_report?.location_description || '–'}</div>
+            <div class="admin-match-name">${esc(m.missing_report?.person_name || '#' + m.missing_report_id)}</div>
+            <div class="admin-match-sub">${esc(m.missing_report?.location_description) || '–'}</div>
           </div>
           <div style="align-self:center;color:var(--text-muted)">↔</div>
           <div class="admin-match-report">
             <div class="admin-match-label">Found</div>
-            <div class="admin-match-name">${m.found_report?.person_name || '#' + m.found_report_id}</div>
-            <div class="admin-match-sub">${m.found_report?.location_description || '–'}</div>
+            <div class="admin-match-name">${esc(m.found_report?.person_name || '#' + m.found_report_id)}</div>
+            <div class="admin-match-sub">${esc(m.found_report?.location_description) || '–'}</div>
           </div>
         </div>
         <div class="admin-match-actions">
@@ -906,7 +913,7 @@ async function loadAdminMatches() {
       </div>`;
     }).join('');
   } catch (e) {
-    container.innerHTML = `<p style="color:var(--error)">Error: ${e.message}</p>`;
+    container.innerHTML = `<p style="color:var(--error)">Error: ${esc(e.message)}</p>`;
   }
 }
 
@@ -942,10 +949,10 @@ async function loadAdminPendingReports() {
     container.innerHTML = items.map(r => `
       <div class="admin-match-row">
         <div style="flex:1">
-          <div class="admin-match-name">${r.person_name || 'Unknown'}
+          <div class="admin-match-name">${esc(r.person_name) || 'Unknown'}
             <span class="report-card-type ${r.report_type === 'missing' ? 'type-missing' : 'type-found'}" style="font-size:0.7rem;margin-left:8px">${r.report_type}</span>
           </div>
-          <div class="admin-match-sub">${r.location_description || '–'} · ${formatDate(r.created_at)}</div>
+          <div class="admin-match-sub">${esc(r.location_description) || '–'} · ${formatDate(r.created_at)}</div>
         </div>
         <div class="admin-match-actions">
           <button class="btn btn-sm btn-success" onclick="adminApproveReport(${r.id})">✓ Approve</button>
@@ -955,7 +962,7 @@ async function loadAdminPendingReports() {
       </div>
     `).join('');
   } catch (e) {
-    container.innerHTML = `<p style="color:var(--error)">Error: ${e.message}</p>`;
+    container.innerHTML = `<p style="color:var(--error)">Error: ${esc(e.message)}</p>`;
   }
 }
 
@@ -1000,11 +1007,11 @@ async function loadAdminUsers() {
     container.innerHTML = users.map(u => `
       <div class="admin-user-row">
         <div class="admin-user-info">
-          <div class="admin-user-name">${u.full_name}
+          <div class="admin-user-name">${esc(u.full_name)}
             ${u.is_admin ? '<span class="status-badge" style="background:rgba(124,58,237,0.2);color:#a78bfa;margin-left:6px">Admin</span>' : ''}
             ${!u.is_active ? '<span class="status-badge status-closed" style="margin-left:6px">Inactive</span>' : ''}
           </div>
-          <div class="admin-user-meta">${u.email} · Joined ${formatDate(u.created_at)}</div>
+          <div class="admin-user-meta">${esc(u.email)} · Joined ${formatDate(u.created_at)}</div>
         </div>
         <div class="admin-match-actions">
           <button class="btn btn-sm ${u.is_active ? 'btn-danger' : 'btn-success'}" onclick="toggleUserActive(${u.id})">
@@ -1015,7 +1022,7 @@ async function loadAdminUsers() {
       </div>
     `).join('');
   } catch (e) {
-    container.innerHTML = `<p style="color:var(--error)">Error: ${e.message}</p>`;
+    container.innerHTML = `<p style="color:var(--error)">Error: ${esc(e.message)}</p>`;
   }
 }
 
@@ -1050,7 +1057,7 @@ async function showEditModal(id) {
     showModal(`
       <h2 style="margin-bottom:20px">Edit Report #${id}</h2>
       <form onsubmit="handleEditSubmit(event,${id})">
-        <div class="form-group"><label>Person Name</label><input type="text" id="edit-name" class="form-control" value="${r.person_name || ''}" /></div>
+        <div class="form-group"><label>Person Name</label><input type="text" id="edit-name" class="form-control" value="${esc(r.person_name) || ''}" /></div>
         <div class="form-group"><label>Status</label>
           <select id="edit-status" class="form-control">
             <option value="active" ${r.status === 'active' ? 'selected' : ''}>Active</option>
@@ -1058,8 +1065,8 @@ async function showEditModal(id) {
             <option value="reunited" ${r.status === 'reunited' ? 'selected' : ''}>Reunited 🎉</option>
           </select>
         </div>
-        <div class="form-group"><label>Location Description</label><input type="text" id="edit-location" class="form-control" value="${r.location_description || ''}" /></div>
-        <div class="form-group"><label>Additional Info</label><textarea id="edit-info" class="form-control">${r.additional_info || ''}</textarea></div>
+        <div class="form-group"><label>Location Description</label><input type="text" id="edit-location" class="form-control" value="${esc(r.location_description) || ''}" /></div>
+        <div class="form-group"><label>Additional Info</label><textarea id="edit-info" class="form-control">${esc(r.additional_info) || ''}</textarea></div>
         <div id="edit-error" class="form-error hidden"></div>
         <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px">
           <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
