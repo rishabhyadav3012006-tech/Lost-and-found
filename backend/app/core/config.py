@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+PROJECT_ROOT = BASE_DIR.parent
 
 class Settings:
     PROJECT_NAME: str = "ReUnite AI"
@@ -22,7 +23,7 @@ class Settings:
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
 
     # ─── File uploads ─────────────────────────────────────────────────────────
-    UPLOAD_DIR: Path = BASE_DIR / "uploads" / "photos"
+    UPLOAD_DIR: Path = PROJECT_ROOT / "uploads" / "photos"
     MAX_FILE_SIZE: int = 5 * 1024 * 1024  # 5 MB
     ALLOWED_IMAGE_TYPES: list = ["image/jpeg", "image/png", "image/webp", "image/gif"]
 

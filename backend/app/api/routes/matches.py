@@ -12,6 +12,16 @@ from ...services.matching import run_matching_for_report
 router = APIRouter(prefix="/matches", tags=["matches"])
 
 
+def _can_access_match(match: Match, user: User) -> bool:
+    """Admins can access any match; users only matches involving their reports."""
+    if user.is_admin:
+        return True
+    return user.id in {
+        match.missing_report.submitter_id,
+        match.found_report.submitter_id,
+    }
+
+
 @router.get("/", response_model=PaginatedMatches)
 def list_matches(
     status: Optional[MatchStatus] = None,
@@ -90,6 +100,9 @@ def get_match(
     ).filter(Match.id == match_id).first()
     if not match:
         raise HTTPException(404, "Match not found")
+    if not _can_access_match(match, current_user):
+        # Hide existence of matches the user is not involved in.
+        raise HTTPException(404, "Match not found")
     return match
 
 
@@ -102,6 +115,8 @@ def update_match(
 ):
     match = db.query(Match).filter(Match.id == match_id).first()
     if not match:
+        raise HTTPException(404, "Match not found")
+    if not _can_access_match(match, current_user):
         raise HTTPException(404, "Match not found")
     # pyrefly: ignore[read-only]
     match.status = payload.status

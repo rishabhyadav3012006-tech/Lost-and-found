@@ -182,7 +182,11 @@ def my_reports(
 
 
 @router.get("/{report_id}", response_model=ReportOut)
-def get_report(report_id: int, db: Session = Depends(get_db)):
+def get_report(
+    report_id: int,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_user),
+):
     report = (
         db.query(Report)
         .options(joinedload(Report.photos))
@@ -191,7 +195,21 @@ def get_report(report_id: int, db: Session = Depends(get_db)):
     )
     if not report:
         raise HTTPException(404, "Report not found")
-    return report
+
+    is_privileged = bool(
+        current_user
+        and (current_user.id == report.submitter_id or current_user.is_admin)
+    )
+    if not report.is_public and not is_privileged:
+        # Hide existence of private reports from non-owners.
+        raise HTTPException(404, "Report not found")
+
+    out = ReportOut.model_validate(report)
+    if not is_privileged:
+        out.contact_name = None
+        out.contact_phone = None
+        out.contact_email = None
+    return out
 
 
 @router.patch("/{report_id}", response_model=ReportOut)
