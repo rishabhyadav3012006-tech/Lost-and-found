@@ -51,6 +51,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -86,9 +87,8 @@ if FRONTEND_DIR.exists():
     @app.get("/{full_path:path}", response_class=FileResponse)
     async def serve_spa(full_path: str, request: Request):
         """Serve frontend for all non-API routes (SPA fallback)."""
-        # Don't intercept API routes — return 404 for unmatched /api/* paths
-        if full_path.startswith("api/"):
-            from fastapi import Response
-            return Response(status_code=404)
+        # Don't intercept API routes — return JSON 404 for unmatched /api or /api/* paths
+        if full_path == "api" or full_path.startswith("api/"):
+            return JSONResponse(status_code=404, content={"detail": f"API endpoint '/{full_path}' not found"})
         index_path = FRONTEND_DIR / "index.html"
         return FileResponse(str(index_path))

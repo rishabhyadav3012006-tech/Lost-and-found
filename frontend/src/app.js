@@ -3,8 +3,58 @@
    Pure Vanilla JS SPA (no frameworks needed)
    ═══════════════════════════════════════════════════ */
 
-const API = window.__API_URL__ || localStorage.getItem('reunite_api_url') || '/api';
-const UPLOADS_BASE = window.__UPLOADS_URL__ || localStorage.getItem('reunite_uploads_url') || '/uploads/photos';
+function getApiBase() {
+  if (window.__API_URL__) return window.__API_URL__;
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const qApi = params.get('api');
+    if (qApi) {
+      localStorage.setItem('reunite_api_url', qApi);
+      return qApi;
+    }
+  } catch {}
+
+  const saved = localStorage.getItem('reunite_api_url');
+  if (saved) return saved;
+
+  // If opened via file:// or from a local dev server (e.g. Live Server on 5500, Vite on 5173, etc.),
+  // default to the FastAPI backend running locally at http://127.0.0.1:8000/api
+  if (
+    window.location.protocol === 'file:' ||
+    ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+      window.location.port !== '8000' && window.location.port !== '')
+  ) {
+    return 'http://127.0.0.1:8000/api';
+  }
+
+  return '/api';
+}
+
+function getUploadsBase() {
+  if (window.__UPLOADS_URL__) return window.__UPLOADS_URL__;
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const qUp = params.get('uploads');
+    if (qUp) {
+      localStorage.setItem('reunite_uploads_url', qUp);
+      return qUp;
+    }
+  } catch {}
+  const saved = localStorage.getItem('reunite_uploads_url');
+  if (saved) return saved;
+  if (
+    window.location.protocol === 'file:' ||
+    ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+      window.location.port !== '8000' && window.location.port !== '')
+  ) {
+    return 'http://127.0.0.1:8000/uploads/photos';
+  }
+  return '/uploads/photos';
+}
+
+let API = getApiBase();
+let UPLOADS_BASE = getUploadsBase();
 let currentUser = null;
 let authToken = localStorage.getItem('reunite_token') || null;
 let filterDebounceTimer = null;
@@ -20,17 +70,70 @@ function apiHeaders(extra = {}) {
   return h;
 }
 
-async function apiFetch(path, options = {}) {
-  const res = await fetch(API + path, {
-    ...options,
-    headers: authToken
-      ? { 'Authorization': `Bearer ${authToken}`, ...options.headers }
-      : options.headers,
-  });
-  if (res.status === 204) return null;
-  const data = await res.json().catch(() => ({ detail: res.statusText }));
-  if (!res.ok) throw new Error(data.detail || 'Request failed');
+async function safeParseJson(res) {
+  const contentType = res.headers.get('content-type') || '';
+  const text = await res.text();
+
+  let data = null;
+  const isLikelyJson = contentType.includes('application/json') ||
+    text.trim().startsWith('{') ||
+    text.trim().startsWith('[');
+
+  if (isLikelyJson) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      // ignore JSON parse error, handled below
+    }
+  }
+
+  // Handle HTML or non-JSON responses
+  if (data === null) {
+    const trimmed = text.trim();
+    if (trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html') || trimmed.startsWith('<')) {
+      throw new Error(
+        `API returned HTML instead of JSON (${res.status} ${res.statusText || 'Error'}). ` +
+        `The backend server may be offline, unreachable, or the API URL is misconfigured (Target: ${API}).`
+      );
+    }
+    if (!res.ok) {
+      throw new Error(trimmed || `Request failed with status ${res.status} (${res.statusText || 'Error'})`);
+    }
+    throw new Error(`Unexpected non-JSON response from server (${res.status}).`);
+  }
+
+  // Handle JSON errors (e.g. 400, 401, 404, 422, 500)
+  if (!res.ok) {
+    let msg = 'Request failed';
+    if (typeof data.detail === 'string') {
+      msg = data.detail;
+    } else if (Array.isArray(data.detail)) {
+      msg = data.detail.map(d => d.msg || JSON.stringify(d)).join(', ');
+    } else if (data.message) {
+      msg = data.message;
+    } else if (data.detail) {
+      msg = JSON.stringify(data.detail);
+    }
+    throw new Error(msg);
+  }
+
   return data;
+}
+
+async function apiFetch(path, options = {}) {
+  let res;
+  try {
+    res = await fetch(API + path, {
+      ...options,
+      headers: authToken
+        ? { 'Authorization': `Bearer ${authToken}`, ...options.headers }
+        : options.headers,
+    });
+  } catch (netErr) {
+    throw new Error(`Cannot connect to backend server at ${API}. Please check your connection and ensure the backend is running.`);
+  }
+  if (res.status === 204) return null;
+  return await safeParseJson(res);
 }
 
 function showToast(msg, type = 'info') {
@@ -163,9 +266,13 @@ async function handleLogin(e) {
     const form = new FormData();
     form.append('username', email);
     form.append('password', password);
-    const res = await fetch(API + '/auth/login', { method: 'POST', body: form });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'Login failed');
+    let res;
+    try {
+      res = await fetch(API + '/auth/login', { method: 'POST', body: form });
+    } catch (netErr) {
+      throw new Error(`Cannot connect to backend server at ${API}. Please check your connection and ensure the backend is running.`);
+    }
+    const data = await safeParseJson(res);
     authToken = data.access_token;
     localStorage.setItem('reunite_token', authToken);
     currentUser = data.user;
@@ -748,9 +855,13 @@ async function handleReportSubmit(e, type) {
     const headers = {};
     if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
 
-    const res = await fetch(API + '/reports/', { method: 'POST', body: form, headers });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'Submission failed');
+    let res;
+    try {
+      res = await fetch(API + '/reports/', { method: 'POST', body: form, headers });
+    } catch (netErr) {
+      throw new Error(`Cannot connect to backend server at ${API}. Please check your connection and ensure the backend is running.`);
+    }
+    const data = await safeParseJson(res);
 
     sucEl.textContent = `✅ Report submitted successfully! Report ID: #${data.id}. Our system will search for potential matches.`;
     sucEl.classList.remove('hidden');

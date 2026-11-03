@@ -139,9 +139,7 @@ class Match(Base):
     status = Column(SAEnum(MatchStatus), default=MatchStatus.suggested)
     reviewed_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     # pyrefly: ignore[deprecated]
-    created_at = Column(DateTime, default=
-    # pyrefly: ignore[parse-error]
-    )
+    created_at = Column(DateTime, default=datetime.utcnow)
     # pyrefly: ignore[deprecated]
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
