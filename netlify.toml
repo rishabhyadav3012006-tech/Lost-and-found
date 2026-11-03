@@ -13,20 +13,7 @@
   to = "/public/:splat"
   status = 200
 
-# Proxy API requests to your live backend server
-# Replace with your actual backend URL once deployed on Render/Railway
-[[redirects]]
-  from = "/api/*"
-  to = "https://lost-and-found-backend.onrender.com/api/:splat"
-  status = 200
-  force = true
-
-# Proxy uploaded photos to backend
-[[redirects]]
-  from = "/uploads/*"
-  to = "https://lost-and-found-backend.onrender.com/uploads/:splat"
-  status = 200
-  force = true
+# /api/* and /uploads/photos/* are served by Netlify Functions in netlify/functions
 
 # SPA fallback: all other routes load index.html
 [[redirects]]

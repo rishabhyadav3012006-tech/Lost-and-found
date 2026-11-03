@@ -61,8 +61,8 @@ app.add_middleware(
 app.include_router(api_router, prefix=settings.API_PREFIX)
 
 # ─── Serve uploaded photos ───────────────────────────────────────────────────
-# UPLOAD_DIR points to backend/uploads/photos/ — mount its parent so files are
-# accessible at /uploads/photos/<filename> which matches photoUrl() in frontend.
+# UPLOAD_DIR points to uploads/photos/ at the project root — mount its parent so
+# files are accessible at /uploads/photos/<filename> which matches photoUrl().
 UPLOAD_PARENT = settings.UPLOAD_DIR.parent  # backend/uploads/
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_PARENT)), name="uploads")
 

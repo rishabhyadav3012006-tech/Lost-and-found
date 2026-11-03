@@ -133,7 +133,9 @@ async function apiFetch(path, options = {}) {
     throw new Error(`Cannot connect to backend server at ${API}. Please check your connection and ensure the backend is running.`);
   }
   if (res.status === 204) return null;
-  return await safeParseJson(res);
+  const data = await res.json().catch(() => ({ detail: res.statusText }));
+  if (!res.ok) throw new Error(data.detail || 'Request failed');
+  return data;
 }
 
 function showToast(msg, type = 'info') {
@@ -266,13 +268,9 @@ async function handleLogin(e) {
     const form = new FormData();
     form.append('username', email);
     form.append('password', password);
-    let res;
-    try {
-      res = await fetch(API + '/auth/login', { method: 'POST', body: form });
-    } catch (netErr) {
-      throw new Error(`Cannot connect to backend server at ${API}. Please check your connection and ensure the backend is running.`);
-    }
-    const data = await safeParseJson(res);
+    const res = await fetch(API + '/auth/login', { method: 'POST', body: form });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Login failed');
     authToken = data.access_token;
     localStorage.setItem('reunite_token', authToken);
     currentUser = data.user;
@@ -855,13 +853,9 @@ async function handleReportSubmit(e, type) {
     const headers = {};
     if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
 
-    let res;
-    try {
-      res = await fetch(API + '/reports/', { method: 'POST', body: form, headers });
-    } catch (netErr) {
-      throw new Error(`Cannot connect to backend server at ${API}. Please check your connection and ensure the backend is running.`);
-    }
-    const data = await safeParseJson(res);
+    const res = await fetch(API + '/reports/', { method: 'POST', body: form, headers });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Submission failed');
 
     sucEl.textContent = `✅ Report submitted successfully! Report ID: #${data.id}. Our system will search for potential matches.`;
     sucEl.classList.remove('hidden');

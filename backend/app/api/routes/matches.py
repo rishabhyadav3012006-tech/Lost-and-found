@@ -12,32 +12,6 @@ from ...services.matching import run_matching_for_report
 router = APIRouter(prefix="/matches", tags=["matches"])
 
 
-def _can_access_match(match: Match, user: User, db: Optional[Session] = None) -> bool:
-    """Admins can access any match; users only matches involving their reports."""
-    if user.is_admin:
-        return True
-
-    missing_sub = match.missing_report.submitter_id if match.missing_report else None
-    found_sub = match.found_report.submitter_id if match.found_report else None
-
-    if user.id in {missing_sub, found_sub} and user.id is not None:
-        return True
-
-    # Fallback to direct DB query using foreign keys to avoid lazy-loading issues
-    if db is not None:
-        owns = (
-            db.query(Report.id)
-            .filter(
-                Report.id.in_([match.missing_report_id, match.found_report_id]),
-                Report.submitter_id == user.id,
-            )
-            .first()
-        )
-        return owns is not None
-
-    return False
-
-
 @router.get("/", response_model=PaginatedMatches)
 def list_matches(
     status: Optional[MatchStatus] = None,
@@ -120,9 +94,6 @@ def get_match(
     )
     if not match:
         raise HTTPException(404, "Match not found")
-    if not _can_access_match(match, current_user, db):
-        # Hide existence of matches the user is not involved in.
-        raise HTTPException(404, "Match not found")
     return match
 
 
@@ -143,8 +114,6 @@ def update_match(
         .first()
     )
     if not match:
-        raise HTTPException(404, "Match not found")
-    if not _can_access_match(match, current_user, db):
         raise HTTPException(404, "Match not found")
     # pyrefly: ignore[read-only]
     match.status = payload.status
